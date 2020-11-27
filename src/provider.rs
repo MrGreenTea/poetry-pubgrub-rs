@@ -74,7 +74,7 @@ impl DependencyProvider<String, PEP440Version> for PypiProvider {
 
 #[cfg(test)]
 mod test {
-    use crate::provider::{get_deps, PypiProvider};
+    use crate::provider::PypiProvider;
     use crate::version::PEP440Version;
     use pubgrub::solver::resolve;
 
