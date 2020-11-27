@@ -234,12 +234,6 @@ impl FromStr for PEP440Version {
     }
 }
 
-impl From<(u32, u32, u32)> for PEP440Version {
-    fn from((major, minor, patch): (u32, u32, u32)) -> Self {
-        PEP440Version::new(major, minor, patch)
-    }
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, Copy)]
 pub enum Prerelease {
     Alpha,
