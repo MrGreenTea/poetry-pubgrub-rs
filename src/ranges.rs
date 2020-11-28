@@ -7,7 +7,7 @@ use std::str::FromStr;
 lazy_static! {
     // copied from packaging python package
     pub static ref SPECIFIER_PATTERN: Regex = Regex::new(r"^(?P<compare>~=|==|!=|<=|>=|<|>|===)\s*(?P<version>\S+)\s*$").unwrap();
-    pub static ref DEPENDENCY_PATTERN: Regex = Regex::new(r"^(?P<name>\S+)\s*\((?P<specs>.+?)\)\s*;?.*$").unwrap();
+    pub static ref DEPENDENCY_PATTERN: Regex = Regex::new(r"^(?P<name>\S+)\s*(:?\((?P<specs>.+?)\))?\s*(?:;\s*(?P<extra>.*))?$").unwrap();
 }
 
 enum Compare {
@@ -77,6 +77,10 @@ fn parse_specifier(spec: &str) -> Option<Range<PEP440Version>> {
 
 pub fn parse_dependency(versions: &str) -> Option<(String, Range<PEP440Version>)> {
     if let Some(captures) = DEPENDENCY_PATTERN.captures(versions) {
+        // TODO handle extra
+        if captures.name("extra").is_some() {
+            return None;
+        }
         match (captures.name("name"), captures.name("specs")) {
             (Some(name), Some(specs)) => {
                 let range = specs
@@ -90,6 +94,7 @@ pub fn parse_dependency(versions: &str) -> Option<(String, Range<PEP440Version>)
                     .fold(Range::any(), |acc, r| acc.intersection(&r));
                 return Some((name.as_str().into(), range));
             }
+            (Some(name), None) => return Some((name.as_str().into(), Range::any())),
             _ => (),
         }
     }
@@ -162,13 +167,14 @@ mod test {
     #[test]
     fn test_parsing_pyopenssl() {
         let require = "pyOpenSSL (>=0.14.0) ; extra == 'security'";
+        let range = parse_dependency(require);
+        assert_eq!(range, None)
+    }
+
+    #[test]
+    fn test_parsing_without_constrains() {
+        let require = "pytz";
         let range = parse_dependency(require).unwrap();
-        assert_eq!(
-            range,
-            (
-                "pyOpenSSL".into(),
-                Range::higher_than(PEP440Version::new(0, 14, 0))
-            )
-        )
+        assert_eq!(range, ("pytz".into(), Range::any()));
     }
 }
