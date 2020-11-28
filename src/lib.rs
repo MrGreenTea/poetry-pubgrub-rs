@@ -2,6 +2,49 @@ mod provider;
 mod ranges;
 mod version;
 
+use pyo3::prelude::*;
+use pyo3::wrap_pyfunction;
+
+use crate::version::PEP440Version;
+use crate::provider::PypiProvider;
+
+use pubgrub::range::Range;
+use pubgrub::solver::resolve;
+use std::collections::HashMap;
+
+#[pyfunction]
+fn resolve_pywrapper(root: &str, version: &str, requires: Vec<(&str, &str)>, dev_requires: Vec<(&str, &str)>) -> PyResult<Vec<(String, String)>> {
+    // not an impl yet, just playing with stuff
+    println!("rust side");
+    println!("root: {}, version: {}", root, version);
+    println!("requires: {:?}", requires);
+    println!("dev_requires: {:?}", dev_requires);
+
+    let provider = PypiProvider::default();
+    let _r: Vec<HashMap<String, PEP440Version, _>> = requires.iter().map(|req| {
+        let (name, version_str) = req;
+        // range doesn't implement string parsing
+        //let range: Range = version_str.parse();
+        // this will fail since version_str encodes a range
+        let version: PEP440Version = version_str.parse().expect("error");
+        let solution: HashMap<String, PEP440Version, _> = resolve(&provider, name.to_string().into(), version).unwrap();
+        println!("{:?}", solution);
+        solution
+    }).collect();
+
+    // test result
+    Ok(vec![("foo".into(), "1.2.3".into())])
+}
+
+//fn from_constraint(constraint: &str) -> Range
+
+/// A Python module implemented in Rust.
+#[pymodule]
+fn _poetry_ext(_py: Python, m: &PyModule) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(resolve_pywrapper, m)?)?;
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use crate::version::PEP440Version;

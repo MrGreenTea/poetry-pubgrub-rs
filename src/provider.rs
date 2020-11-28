@@ -13,7 +13,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::error::Error;
 
-struct PypiProvider {
+pub struct PypiProvider {
     client: reqwest::blocking::Client,
     releases_cache: RefCell<HashMap<String, Vec<PEP440Version>>>,
 }
