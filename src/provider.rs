@@ -38,17 +38,6 @@ struct PackageInfo {
     requires_dist: Option<Vec<String>>,
 }
 
-#[derive(Debug)]
-enum TestError {
-    Test,
-}
-
-impl std::fmt::Display for TestError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "test_error")
-    }
-}
-
 fn get_deps(
     client: &reqwest::blocking::Client,
     package: &String,
@@ -66,8 +55,6 @@ fn get_deps(
         .collect();
     Ok(deps)
 }
-
-impl Error for TestError {}
 
 impl DependencyProvider<String, PEP440Version> for PypiProvider {
     fn choose_package_version<T: Borrow<String>, U: Borrow<Range<PEP440Version>>>(

@@ -33,16 +33,11 @@ impl DependencyProvider<String, PEP440Version> for PoetryProvider {
         &self,
         potential_packages: impl Iterator<Item = (T, U)>,
     ) -> Result<(T, Option<PEP440Version>), Box<dyn Error>> {
-        self.remote.choose_package_version(potential_packages)
-        //let vec: Vec<_> = potential_packages.collect();
-        //match vec.iter().find(|(p, _)| p.borrow() == &self.root.package) {
-        //    Some((p, _)) => {
-        //        Ok(
-        //            (p, Some(self.root.version.clone()))
-        //        )
-        //    }
-        //    None => self.remote.choose_package_version(vec.into_iter())
-        //}
+        let (root, other): (Vec<_>, Vec<_>) = potential_packages.partition(|(p, _)| p.borrow() == &self.root.package);
+        match root.into_iter().next() {
+            Some((p, _)) => Ok((p, Some(self.root.version.clone()))),
+            None => self.remote.choose_package_version(other.into_iter())
+        }
     }
 
     fn get_dependencies(
