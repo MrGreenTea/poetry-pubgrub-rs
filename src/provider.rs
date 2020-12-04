@@ -5,7 +5,6 @@ use pubgrub::solver::Dependencies::Known;
 use pubgrub::solver::{
     choose_package_with_fewest_versions, Dependencies, DependencyConstraints, DependencyProvider,
 };
-use serde::export::Formatter;
 use serde::Deserialize;
 use serde_json::{Map, Value};
 use std::borrow::Borrow;

@@ -35,7 +35,8 @@ impl DependencyProvider<String, PEP440Version> for PoetryProvider {
     ) -> Result<(T, Option<PEP440Version>), Box<dyn Error>> {
         let (root, other): (Vec<_>, Vec<_>) = potential_packages.partition(|(p, _)| p.borrow() == &self.root.package);
         match root.into_iter().next() {
-            Some((p, _)) => Ok((p, Some(self.root.version.clone()))),
+            Some((p, v)) if v.borrow().contains(&self.root.version)=> Ok((p, Some(self.root.version.clone()))),
+            Some((p, _)) => Ok((p, None)),
             None => self.remote.choose_package_version(other.into_iter())
         }
     }

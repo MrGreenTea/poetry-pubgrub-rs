@@ -6,19 +6,15 @@ mod version;
 use pyo3::prelude::*;
 use pyo3::wrap_pyfunction;
 
-use crate::provider::PypiProvider;
-use crate::version::PEP440Version;
 
 use crate::poetry_provider::{PoetryProvider, RootPackage};
 use crate::ranges::parse_dependency;
-use pubgrub::range::Range;
-use pubgrub::solver::DependencyConstraints;
-use std::collections::HashMap;
 
-fn resolve(root: &str, version: &str, requires: Vec<(&str, &str)>) -> Vec<(String, String)> {
+fn resolve(root: &str, version: &str, requires: Vec<(&str, &str)>, dev_requires: Vec<(&str, &str)>) -> Vec<(String, String)> {
     let version = version.parse().unwrap();
     let dependencies = requires
         .iter()
+        .chain(dev_requires.iter())
         .map(|(name, range)| {
             let range = parse_dependency(&format!("{} ({})", name, range)).unwrap();
             range
@@ -47,8 +43,9 @@ fn resolve_pywrapper(
     println!("requires: {:?}", requires);
     println!("dev_requires: {:?}", dev_requires);
 
-    // test result
-    Ok(vec![("foo".into(), "1.2.3".into())])
+    let solution = resolve(root, version, requires, dev_requires);
+    println!("solution: {:?}", solution);
+    Ok(solution)
 }
 
 //fn from_constraint(constraint: &str) -> Range
@@ -67,7 +64,7 @@ mod tests {
 
     #[test]
     fn test_resolve_poetry() {
-        let solution = resolve("poetry", "999.9.9", vec![
+        let solution = resolve("poetry", "1.2.0a0", vec![
             ("poetry-core", ">=1.0.0,<2"),
             ("cleo", ">=0.8.1,<0.9"),
             ("clikit", ">=0.6.2,<0.7"),
@@ -83,6 +80,7 @@ mod tests {
             ("packaging", ">=20.4,<21"),
             ("virtualenv", ">20.0.26,<21"),
             ("keyring", ">=21.2.0,<22"),
-        ]);
+        ], vec![]);
+        assert!(solution.contains(&("poetry".into(), "1.2.0a0".into())))
     }
 }

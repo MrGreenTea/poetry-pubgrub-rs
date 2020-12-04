@@ -125,10 +125,11 @@ impl PEP440Version {
 
 impl Ord for PEP440Version {
     fn cmp(&self, other: &Self) -> Ordering {
-        (self.major, self.minor, self.patch, self.post, self.dev).cmp(&(
+        (self.major, self.minor, self.patch, self.pre, self.post, self.dev).cmp(&(
             other.major,
             other.minor,
             other.patch,
+            other.pre,
             other.post,
             other.dev,
         ))
@@ -234,7 +235,7 @@ impl FromStr for PEP440Version {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Copy)]
+#[derive(Debug, Clone, PartialEq, Eq, Copy, PartialOrd, Ord)]
 pub enum Prerelease {
     Alpha,
     Beta,
