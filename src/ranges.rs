@@ -66,10 +66,9 @@ fn parse_specifier(spec: &str) -> Option<Range<PEP440Version>> {
             .and_then(|cmp| cmp.as_str().parse::<Compare>().ok());
         let version = captures
             .name("version")
-            .and_then(|v| v.as_str().parse::<PEP440Version>().ok());
-        debug_assert!(version.is_some());
+            .and_then(|v| v.as_str().parse::<PEP440Version>().ok()).expect(&format!("{} could not be parsed", spec));
         match (cmp, version) {
-            (Some(cmp), Some(version)) => Some(compare_to_range(cmp, version)),
+            (Some(cmp), version) => Some(compare_to_range(cmp, version)),
             _ => None,
         }
     })

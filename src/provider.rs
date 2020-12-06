@@ -122,7 +122,7 @@ mod test {
         let solution = resolve(&provider, "requests".into(), PEP440Version::new(2, 25, 0)).unwrap();
         for (p, v) in vec![
             ("requests".into(), PEP440Version::new(2, 25, 0)),
-            ("certifi".into(), PEP440Version::new(2020, 11, 8)),
+            ("certifi".into(), PEP440Version::new(2020, 12, 5)),
             ("chardet".into(), PEP440Version::new(3, 0, 4)),
             ("idna".into(), PEP440Version::new(2, 10, 0)),
             ("urllib3".into(), PEP440Version::new(1, 26, 2)),

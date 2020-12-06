@@ -10,7 +10,7 @@ use pyo3::wrap_pyfunction;
 use crate::poetry_provider::{PoetryProvider, RootPackage};
 use crate::ranges::parse_dependency;
 
-fn resolve(root: &str, version: &str, requires: Vec<(&str, &str)>, dev_requires: Vec<(&str, &str)>) -> Vec<(String, String)> {
+pub fn resolve(root: &str, version: &str, requires: Vec<(&str, &str)>, dev_requires: Vec<(&str, &str)>) -> Vec<(String, String)> {
     let version = version.parse().unwrap();
     let dependencies = requires
         .iter()
@@ -26,8 +26,15 @@ fn resolve(root: &str, version: &str, requires: Vec<(&str, &str)>, dev_requires:
         dependencies,
     };
     let provider = PoetryProvider::new(root.clone());
-    let solution = pubgrub::solver::resolve(&provider, root.package, root.version).unwrap();
-    solution.iter().map(|(p, v)| (p.clone(), format!("{}", v))).collect()
+    let solution = pubgrub::solver::resolve(&provider, root.package.clone(), root.version.clone()).unwrap();
+    solution.iter().filter_map(|(p, v)| {
+        if p == &root.package {
+            Some((p.clone(), format!("{}", v)))
+        }
+        else {
+            None
+        }
+    }).collect()
 }
 
 #[pyfunction]
@@ -80,7 +87,18 @@ mod tests {
             ("packaging", ">=20.4,<21"),
             ("virtualenv", ">20.0.26,<21"),
             ("keyring", ">=21.2.0,<22"),
-        ], vec![]);
-        assert!(solution.contains(&("poetry".into(), "1.2.0a0".into())))
+            // missing extra "filecache"
+            ("cachecontrol", ">=0.12.4,<0.13"),
+        ], vec![
+            ("pytest", ">=5.4.3,<6"),
+            ("pre-commit", ">=2.6,<3"),
+            ("pytest-cov", ">=2.5,<3"),
+            ("pytest-mock", ">=1.9,<2"),
+            ("tox", ">=3.0,<4"),
+            ("pytest-sugar", ">=0.9.2,<0.10"),
+            ("httpretty", ">=1.0,<2"),
+            ("urllib3", "==1.25.10"),
+            ("setuptools-rust", ">=0.11.5,<0.12")
+        ]);
     }
 }
